@@ -12,3 +12,8 @@ class PermissionDeniedError(AppError):
 
 class InvalidTransitionError(AppError):
     pass
+
+
+class ConflictError(AppError):
+    pass
+
