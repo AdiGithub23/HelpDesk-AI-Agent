@@ -6,6 +6,10 @@ class NotFoundError(AppError):
     pass
 
 
+class AuthenticationError(AppError):
+    pass
+
+
 class PermissionDeniedError(AppError):
     pass
 
@@ -16,4 +20,5 @@ class InvalidTransitionError(AppError):
 
 class ConflictError(AppError):
     pass
+
 
