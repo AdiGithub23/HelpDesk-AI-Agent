@@ -17,7 +17,7 @@ class CommentService:
     async def add_comment(
         self, user: User, ticket_id: int, data: CommentCreate
     ) -> Comment:
-        await self.ticket_service.get_ticket(user, ticket_id)       # Ownership rule: raises NotFoundError / PermissionDeniedError
+        await self.ticket_service.get_ticket(user, ticket_id)
 
         if data.is_internal and user.role != UserRole.agent:
             raise PermissionDeniedError("Only agents can leave internal notes")
