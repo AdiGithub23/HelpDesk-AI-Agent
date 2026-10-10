@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
+    ConflictError,
     InvalidTransitionError,
     NotFoundError,
     PermissionDeniedError,
@@ -107,6 +108,8 @@ class TicketService:
             raise NotFoundError("User not found")
         if assignee.role != UserRole.agent:
             raise PermissionDeniedError("A ticket can only be assigned to an agent")
+        if not assignee.is_active:
+            raise ConflictError("Cannot assign a ticket to a deactivated user")
         ticket = await self.tickets.update(ticket, {"assigned_to": assignee_id})
         await self.session.commit()
         return ticket
