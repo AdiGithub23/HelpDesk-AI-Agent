@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.v1.router import api_router
 from app.core.exceptions import (
+    AIProviderError,
     AppError,
     AuthenticationError,
     ConflictError,
@@ -20,6 +21,7 @@ STATUS_CODES = {
     NotFoundError: 404,
     ConflictError: 409,
     InvalidTransitionError: 409,
+    AIProviderError: 502,
 }
 
 

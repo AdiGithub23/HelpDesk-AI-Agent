@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     seed_agent_email: str | None = None
     seed_agent_password: str | None = None
+    gemini_api_key: str
+    chat_model: str
+    embedding_model: str
+    embedding_dimensions: int = 768
 
     model_config = SettingsConfigDict(env_file=".env")
 

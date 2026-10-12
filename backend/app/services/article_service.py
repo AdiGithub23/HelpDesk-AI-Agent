@@ -6,6 +6,7 @@ from app.models.enums import ArticleStatus, UserRole
 from app.repositories.article_repository import ArticleRepository
 from app.repositories.category_repository import CategoryRepository
 from app.schemas.article import ArticleCreate, ArticleUpdate
+from app.services.indexing_service import IndexingService
 
 
 class ArticleService:
@@ -13,6 +14,7 @@ class ArticleService:
         self.session = session
         self.articles = ArticleRepository(session)
         self.categories = CategoryRepository(session)
+        self.indexing = IndexingService(session)
 
     async def list_articles(
         self,
@@ -60,14 +62,20 @@ class ArticleService:
             if await self.categories.get(changes["category_id"]) is None:
                 raise NotFoundError("Category not found")
         article = await self.articles.update(article, changes)
+        if article.status == ArticleStatus.published and {"title", "body"} & changes.keys():
+            await self.indexing.index_article(article)
         await self.session.commit()
         return article
 
     async def change_status(self, article_id: int, status: ArticleStatus) -> Article:
         article = await self._get_or_404(article_id)
         article = await self.articles.update(article, {"status": status})
+        if status == ArticleStatus.published:
+            await self.indexing.index_article(article)
+        else:
+            await self.indexing.remove_article(article.id)
         await self.session.commit()
-        return article   # Layer 2: indexing / un-indexing will be added here
+        return article
 
     async def delete_article(self, article_id: int) -> None:
         article = await self._get_or_404(article_id)

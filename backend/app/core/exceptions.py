@@ -22,3 +22,8 @@ class ConflictError(AppError):
     pass
 
 
+class AIProviderError(AppError):
+    """The AI provider (embeddings or chat) failed."""
+
+
+
