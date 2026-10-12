@@ -42,5 +42,3 @@ async def app_error_handler(request: Request, exc: AppError):
     return JSONResponse(
         status_code=status_code, content={"detail": str(exc)}, headers=headers
     )
-
-
