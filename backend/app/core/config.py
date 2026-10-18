@@ -15,9 +15,15 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env")
 
+    @property
+    def checkpoint_database_url(self) -> str:
+        """The checkpointer uses psycopg: plain postgresql:// with sslmode."""
+        return self.database_url.replace(
+            "postgresql+asyncpg://", "postgresql://", 1
+        ).replace(
+            "ssl=require", "sslmode=require"
+        )
+
 
 settings = Settings()
-
-
-
 

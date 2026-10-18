@@ -11,6 +11,9 @@ class UserService:
         self.session = session
         self.users = UserRepository(session)
 
+    async def get_user(self, user_id: int) -> User:
+        return await self._get_or_404(user_id)
+    
     async def list_users(self, role: UserRole | None = None) -> list[User]:
         return await self.users.list(role)
 
@@ -47,4 +50,5 @@ class UserService:
         if user is None:
             raise NotFoundError("User not found")
         return user
+
 
