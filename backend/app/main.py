@@ -15,6 +15,10 @@ from app.core.exceptions import (
 )
 from app.db.session import engine
 
+import logging
+
+logger = logging.getLogger("uvicorn.error")
+
 STATUS_CODES = {
     AuthenticationError: 401,
     PermissionDeniedError: 403,
@@ -38,9 +42,13 @@ app.include_router(api_router)
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
     status_code = STATUS_CODES.get(type(exc), 400)
+    if status_code >= 500:
+        logger.error("%s: %s", type(exc).__name__, exc, exc_info=exc)
     headers = {"WWW-Authenticate": "Bearer"} if status_code == 401 else None
     return JSONResponse(
         status_code=status_code, content={"detail": str(exc)}, headers=headers
     )
+
+
 
 

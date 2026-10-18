@@ -22,3 +22,8 @@ class TicketPriority(str, Enum):
 class ArticleStatus(str, Enum):
     draft = "draft"
     published = "published"
+
+
+class MessageRole(str, Enum):
+    user = "user"
+    assistant = "assistant"
