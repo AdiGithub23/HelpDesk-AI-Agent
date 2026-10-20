@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,3 +37,13 @@ async def require_agent(user: CurrentUser) -> User:
 
 
 AgentUser = Annotated[User, Depends(require_agent)]
+
+
+def get_triage_graph(request: Request):
+    return request.app.state.triage_graph
+
+
+TriageGraphDep = Annotated[object, Depends(get_triage_graph)]
+
+
+

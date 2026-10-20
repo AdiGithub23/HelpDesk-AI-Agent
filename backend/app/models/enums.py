@@ -27,3 +27,13 @@ class ArticleStatus(str, Enum):
 class MessageRole(str, Enum):
     user = "user"
     assistant = "assistant"
+
+
+class TriageStatus(str, Enum):
+    running = "running"
+    awaiting_review = "awaiting_review"
+    sent = "sent"
+    rejected = "rejected"
+    handed_off = "handed_off"
+    failed = "failed"
+

@@ -3,6 +3,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
 from app.api.v1.router import api_router
 from app.core.exceptions import (
     AIProviderError,
@@ -14,6 +17,8 @@ from app.core.exceptions import (
     PermissionDeniedError,
 )
 from app.db.session import engine
+from app.ai.triage.checkpointer import create_checkpoint_pool
+from app.ai.triage.graph import build_triage_graph
 
 import logging
 
@@ -31,8 +36,16 @@ STATUS_CODES = {
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    yield
-    await engine.dispose()      # close the connection pool when the app stops
+    pool = create_checkpoint_pool()
+    await pool.open()
+    try:
+        checkpointer = AsyncPostgresSaver(pool)
+        await checkpointer.setup()                                  # creates checkpointer tables if they don't exist
+        app.state.triage_graph = build_triage_graph(checkpointer)   # built once
+        yield
+    finally:
+        await pool.close()
+        await engine.dispose()
 
 
 app = FastAPI(title="Helpdesk API", lifespan=lifespan)
@@ -48,7 +61,4 @@ async def app_error_handler(request: Request, exc: AppError):
     return JSONResponse(
         status_code=status_code, content={"detail": str(exc)}, headers=headers
     )
-
-
-
 
