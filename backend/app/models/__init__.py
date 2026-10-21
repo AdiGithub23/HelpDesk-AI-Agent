@@ -6,5 +6,6 @@ from app.models.user import User
 from app.models.article_chunk import ArticleChunk
 from app.models.chat_session import ChatSession
 from app.models.message import Message
+from app.models.triage_run import TriageRun
 
-__all__ = ["Article", "Category", "Comment", "Ticket", "User", "ArticleChunk", "ChatSession", "Message"]
+__all__ = ["Article", "Category", "Comment", "Ticket", "User", "ArticleChunk", "ChatSession", "Message", "TriageRun"]

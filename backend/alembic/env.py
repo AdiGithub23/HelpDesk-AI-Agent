@@ -52,14 +52,26 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object
     )
 
     with context.begin_transaction():
         context.run_migrations()
 
 
+def include_object(object, name, type_, reflected, compare_to):
+    # LangGraph owns the checkpoint* tables; Alembic must not touch them
+    if type_ == "table" and reflected and name.startswith("checkpoint"):
+        return False
+    return True
+
+
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=include_object
+    )
 
     with context.begin_transaction():
         context.run_migrations()
@@ -93,3 +105,5 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+
+
