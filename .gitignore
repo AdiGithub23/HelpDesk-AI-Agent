@@ -62,3 +62,6 @@ desktop.ini
 # Logs
 *.log
 logs/
+
+node_modules/
+dist/
