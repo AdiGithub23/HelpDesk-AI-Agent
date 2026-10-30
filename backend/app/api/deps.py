@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import PermissionDeniedError
+from app.core.security import is_superior_agent
 from app.db.session import AsyncSessionLocal
 from app.models import User
 from app.models.enums import UserRole
@@ -44,6 +45,15 @@ def get_triage_graph(request: Request):
 
 
 TriageGraphDep = Annotated[object, Depends(get_triage_graph)]
+
+
+async def require_superior_agent(user: AgentUser) -> User:
+    if not is_superior_agent(user):
+        raise PermissionDeniedError("Only the superior agent can do this")
+    return user
+
+
+SuperiorUser = Annotated[User, Depends(require_superior_agent)]
 
 
 
