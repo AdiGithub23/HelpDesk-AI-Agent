@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import { useAuth } from '../auth.jsx'
 import { Empty, ErrorMessage, Loading } from '../components/Feedback.jsx'
@@ -15,11 +15,16 @@ export default function Users() {
     setError('')
     try {
       await action()
-      users.reload()
     } catch (e) {
       setError(e.message)
     }
+    users.reload()
   }
+
+  useEffect(() => {
+    setRoles({})
+    setActive({})
+  }, [users.data])
 
   return (
     <>
