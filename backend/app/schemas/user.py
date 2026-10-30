@@ -22,3 +22,8 @@ class UserRoleUpdate(BaseModel):
 
 class UserActiveUpdate(BaseModel):
     is_active: bool
+
+
+class MeRead(UserRead):
+    is_superior: bool
+

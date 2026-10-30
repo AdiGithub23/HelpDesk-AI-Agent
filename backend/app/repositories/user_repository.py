@@ -16,10 +16,12 @@ class UserRepository:
         result = await self.session.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
-    async def list(self, role: UserRole | None = None) -> list[User]:
+    async def list(self, role: UserRole | None = None, active_only: bool = False) -> list[User]:
         stmt = select(User).order_by(User.id)
         if role is not None:
             stmt = stmt.where(User.role == role)
+        if active_only:
+            stmt = stmt.where(User.is_active.is_(True))
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -34,6 +36,4 @@ class UserRepository:
             setattr(user, field, value)
         await self.session.flush()
         return user
-
-
 

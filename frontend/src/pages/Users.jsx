@@ -8,6 +8,8 @@ export default function Users() {
   const { user: me } = useAuth()
   const users = useLoad(() => api.users(), [])
   const [error, setError] = useState('')
+  const [roles, setRoles] = useState({})
+  const [active, setActive] = useState({})
 
   async function run(action) {
     setError('')
@@ -25,6 +27,10 @@ export default function Users() {
       <ErrorMessage message={error || users.error} />
       {users.loading && !users.data && <Loading />}
       {users.data && users.data.length === 0 && <Empty>No users.</Empty>}
+
+      {!me.is_superior && (
+        <p className="muted">Read-only. Only the superior agent can change roles or active status.</p>
+      )}
 
       {users.data && users.data.length > 0 && (
         <table>
@@ -46,25 +52,41 @@ export default function Users() {
                   <td>{u.full_name}</td>
                   <td>{u.email}</td>
                   <td>
-                    <select
-                      value={u.role}
-                      disabled={isMe}
-                      title={isMe ? 'You cannot change your own role' : ''}
-                      onChange={(e) => run(() => api.setUserRole(u.id, e.target.value))}
-                    >
-                      <option value="employee">employee</option>
-                      <option value="agent">agent</option>
-                    </select>
+                    {me.is_superior ? (
+                      <select
+                        value={roles[u.id] ?? u.role}
+                        disabled={isMe}
+                        title={isMe ? 'You cannot change your own role' : ''}
+                        onChange={(e) => {
+                          const role = e.target.value
+                          setRoles((r) => ({ ...r, [u.id]: role }))
+                          run(() => api.setUserRole(u.id, role))
+                        }}
+                      >
+                        <option value="employee">employee</option>
+                        <option value="agent">agent</option>
+                      </select>
+                    ) : (
+                      u.role
+                    )}
                   </td>
                   <td className="row">
-                    <span className={u.is_active ? 'ok' : 'muted'}>{u.is_active ? 'active' : 'inactive'}</span>
-                    <button
-                      disabled={isMe}
-                      title={isMe ? 'You cannot change your own status' : ''}
-                      onClick={() => run(() => api.setUserActive(u.id, !u.is_active))}
-                    >
-                      {u.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
+                    <span className={(active[u.id] ?? u.is_active) ? 'ok' : 'muted'}>
+                      {(active[u.id] ?? u.is_active) ? 'active' : 'inactive'}
+                    </span>
+                    {me.is_superior && (
+                      <button
+                        disabled={isMe}
+                        title={isMe ? 'You cannot change your own status' : ''}
+                        onClick={() => {
+                          const next = !(active[u.id] ?? u.is_active)
+                          setActive((a) => ({ ...a, [u.id]: next }))
+                          run(() => api.setUserActive(u.id, next))
+                        }}
+                      >
+                        {(active[u.id] ?? u.is_active) ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
                   </td>
                 </tr>
               )
@@ -75,4 +97,3 @@ export default function Users() {
     </>
   )
 }
-

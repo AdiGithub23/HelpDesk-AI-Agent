@@ -4,6 +4,7 @@ import jwt
 from pwdlib import PasswordHash
 
 from app.core.config import settings
+from app.models.enums import UserRole
 
 ALGORITHM = "HS256"
 _password_hash = PasswordHash.recommended()
@@ -32,3 +33,12 @@ def decode_access_token(token: str) -> int | None:
         return int(payload["sub"])
     except (jwt.PyJWTError, KeyError, ValueError):
         return None
+
+
+def is_superior_agent(user) -> bool:
+    """The seeded agent (SEED_AGENT_EMAIL) is the only superior agent."""
+    return (
+        user.role == UserRole.agent
+        and bool(settings.seed_agent_email)
+        and user.email == settings.seed_agent_email.lower()
+    )
