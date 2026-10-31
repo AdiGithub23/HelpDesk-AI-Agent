@@ -1,3 +1,5 @@
+import asyncio
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -15,10 +17,12 @@ from app.core.exceptions import (
     InvalidTransitionError,
     NotFoundError,
     PermissionDeniedError,
+    InvalidInputError,
 )
 from app.db.session import engine
 from app.ai.triage.checkpointer import create_checkpoint_pool
 from app.ai.triage.graph import build_triage_graph
+from app.ai.stt import load_stt_model
 
 import logging
 
@@ -31,6 +35,7 @@ STATUS_CODES = {
     ConflictError: 409,
     InvalidTransitionError: 409,
     AIProviderError: 502,
+    InvalidInputError: 400,
 }
 
 
@@ -42,6 +47,7 @@ async def lifespan(app: FastAPI):
         checkpointer = AsyncPostgresSaver(pool)
         await checkpointer.setup()                                  # creates checkpointer tables if they don't exist
         app.state.triage_graph = build_triage_graph(checkpointer)   # built once
+        app.state.stt_model = await asyncio.to_thread(load_stt_model)
         yield
     finally:
         await pool.close()
@@ -61,4 +67,6 @@ async def app_error_handler(request: Request, exc: AppError):
     return JSONResponse(
         status_code=status_code, content={"detail": str(exc)}, headers=headers
     )
+
+
 
