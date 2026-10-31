@@ -56,4 +56,9 @@ async def require_superior_agent(user: AgentUser) -> User:
 SuperiorUser = Annotated[User, Depends(require_superior_agent)]
 
 
+def get_stt_model(request: Request):
+    return request.app.state.stt_model
+
+
+SttModelDep = Annotated[object, Depends(get_stt_model)]
 

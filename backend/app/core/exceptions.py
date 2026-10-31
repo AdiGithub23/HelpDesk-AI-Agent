@@ -26,4 +26,9 @@ class AIProviderError(AppError):
     """The AI provider (embeddings or chat) failed."""
 
 
+class InvalidInputError(AppError):
+    """The request is valid JSON/form but its content cannot be used (empty or too large audio)."""
+
+
+
 

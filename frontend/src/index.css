@@ -84,7 +84,11 @@ th { font-size: 0.85rem; color: var(--muted); }
 .sources { margin-top: 0.4rem; font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 0.6rem; }
 .chat-input { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
 
+.mic.recording { background: var(--danger); border-color: var(--danger); color: #fff; }
+
 @media (max-width: 700px) {
   .chat { grid-template-columns: 1fr; height: auto; }
   .header { flex-wrap: wrap; }
 }
+
+
