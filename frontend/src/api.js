@@ -25,7 +25,7 @@ function errorMessage(body, status) {
   return `Request failed (${status})`
 }
 
-async function request(path, { method = 'GET', json, form, params } = {}) {
+async function request(path, { method = 'GET', json, form, formData, params } = {}) {
   let url = BASE + path
   if (params) {
     const qs = new URLSearchParams()
@@ -46,6 +46,8 @@ async function request(path, { method = 'GET', json, form, params } = {}) {
     body = JSON.stringify(json)
   } else if (form) {
     body = new URLSearchParams(form) // the browser sets the form content type
+  } else if (formData) {
+    body = formData // multipart: the browser sets the content type and boundary
   }
 
   let res
@@ -127,4 +129,11 @@ export const api = {
   startTriage: (ticketId) => request(`/tickets/${ticketId}/triage-runs`, { method: 'POST' }),
   decideTriage: (runId, data) =>
     request(`/triage-runs/${runId}/decision`, { method: 'POST', json: data }),
+
+  // speech
+  transcribe: (blob) => {
+    const fd = new FormData()
+    fd.append('audio', blob, 'speech')
+    return request('/speech/transcribe', { method: 'POST', formData: fd })
+  },
 }

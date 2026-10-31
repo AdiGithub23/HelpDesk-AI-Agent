@@ -4,6 +4,7 @@ import { api } from '../api.js'
 import { ErrorMessage, Loading } from '../components/Feedback.jsx'
 import { useLoad } from '../hooks.js'
 import { fmt } from '../utils.js'
+import { useRecorder } from '../useRecorder.js'
 
 export default function Chat() {
   const sessions = useLoad(() => api.chatSessions({ limit: 50, offset: 0 }), [])
@@ -17,6 +18,11 @@ export default function Chat() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const bottomRef = useRef(null)
+
+  const recorder = useRecorder((text) =>
+    setInput((prev) => (prev ? prev.trimEnd() + ' ' : '') + text),
+  )
+  const voiceBusy = recorder.state !== 'idle'
 
   // open the most recent session when the list first loads
   useEffect(() => {
@@ -119,16 +125,29 @@ export default function Chat() {
               )}
               <div ref={bottomRef} />
             </div>
-            <ErrorMessage message={error || messages.error} />
+            <ErrorMessage message={error || messages.error || recorder.error} />
             <form className="chat-input" onSubmit={send}>
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question…"
+                placeholder="Type or speak your question…"
                 maxLength={2000}
-                disabled={sending}
+                disabled={sending || recorder.state === 'transcribing'}
               />
-              <button className="primary" disabled={sending || !input.trim()}>
+              <button
+                type="button"
+                className={`mic ${recorder.state === 'recording' ? 'recording' : ''}`}
+                onClick={recorder.toggle}
+                disabled={sending || recorder.state === 'transcribing'}
+                title="Speak your question (click again to stop)"
+              >
+                {recorder.state === 'recording'
+                  ? '■ Stop'
+                  : recorder.state === 'transcribing'
+                    ? 'Transcribing…'
+                    : '🎤'}
+              </button>
+              <button className="primary" disabled={sending || voiceBusy || !input.trim()}>
                 Send
               </button>
             </form>
